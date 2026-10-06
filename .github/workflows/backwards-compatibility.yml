@@ -3,6 +3,9 @@ name: "Backwards compatibility check"
 on:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   bc-check:
     name: "Backwards compatibility check"
@@ -10,13 +13,19 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@351661ca32ac09a36dc5ee2d536e3128f2a3c8ed # v2.22.0
+        with:
+          use-policy-store: true
+          api-key: ${{ secrets.STEP_SECURITY_API_KEY }}
+
       - name: "Checkout"
-        uses: "actions/checkout@v7.0.1"
+        uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
         with:
           fetch-depth: 0
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.37.2"
+        uses: step-security/setup-php@de840ac176c62a2558231845e09841c1b62e0bd0 # v2.37.2
         with:
           php-version: "8.4"
           ini-values: memory_limit=-1
@@ -29,7 +38,7 @@ jobs:
         run: echo "composer_cache_dir=$(composer global config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: "Cache dependencies"
-        uses: "actions/cache@v6.1.0"
+        uses: "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
         with:
           path: ${{ steps.composer-cache.outputs.composer_cache_dir }}
           key: "php-8.3-bc-break-check-${{ hashFiles('.github/workflows/backwards-compatibility.yml') }}"
